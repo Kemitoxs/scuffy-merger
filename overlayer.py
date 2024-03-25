@@ -47,7 +47,10 @@ def overlay_pdfs(base_pdf_path, overlay_pdf_path, output_pdf_path, index):
             raise RuntimeError("Unexpected end of overlay PDF.")
 
         overlay_page = overlay_pdf[overlay_index]
-        base_page.show_pdf_page(base_page.rect, overlay_pdf, overlay_page.number)  # Overlay page
+        try:
+            base_page.show_pdf_page(base_page.rect, overlay_pdf, overlay_page.number)  # Overlay page
+        except ValueError as e:
+            print(f"Could not overlay empty page, {e}")
 
     base_pdf.save(output_pdf_path)
 

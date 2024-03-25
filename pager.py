@@ -8,7 +8,7 @@ import uuid
 
 
 installer.install_fitz()
-from pypdf import PdfWriter
+from pypdf import PdfWriter, PdfReader, PageObject
 import fitz
 
 
@@ -18,6 +18,8 @@ def parse_args():
     parser.add_argument('--offset', '-O', type=int, default=1, help='Total page offset')
     parser.add_argument("--output", "-o", help="Path to the output file")
     parser.add_argument("-c", "--count", action="store_true", default=False, help="Count the number of pages")
+    parser.add_argument("--always-on", choices=['odd', 'even'],
+                        help="Ensure separation starts on either an odd or even page.")
 
     args = parser.parse_args()
     return args
@@ -30,7 +32,7 @@ def get_pages(file_path):
     return page_count
 
 
-def generate_every_pdf(temp_dir, files):
+def generate_every_pdf(temp_dir, files, always_on=None):
     """Generates every PDF and returns how long they are"""
     pdf_info = {}
 
@@ -57,7 +59,7 @@ def generate_every_pdf(temp_dir, files):
     return pdf_info
 
 
-def generate_with_offset(pdf_info, temp_dir, initial_offset):
+def generate_with_offset(pdf_info, temp_dir, initial_offset, always_on=None):
     """Generates every PDF with the given offset"""
     cumulative_offset = initial_offset
     regenerated_pdf_paths = []
@@ -69,6 +71,12 @@ def generate_with_offset(pdf_info, temp_dir, initial_offset):
         pdf_path = os.path.join(temp_dir, str(uuid.uuid4()) + ".pdf")
 
         # Use the offset_generator to regenerate the document with the current cumulative offset
+        if always_on:
+            is_even = cumulative_offset % 2 == 0
+            needs_empty_page = (always_on == "odd" and is_even) or (always_on == "even" and not is_even)
+            if needs_empty_page:
+                cumulative_offset += 1
+
         offset_generator.generate_document(adoc_file, cumulative_offset, pdf_path)
         print(f"Regenerated {adoc_file} with offset {cumulative_offset} to {pdf_path}")
 
@@ -81,11 +89,27 @@ def generate_with_offset(pdf_info, temp_dir, initial_offset):
     return regenerated_pdf_paths
 
 
-def combine_pdfs(files, output_path):
+def combine_pdfs(files, output_path, offset, always_on=None):
     """Combines all the given PDFs into one by appending them"""
     merger = PdfWriter()
 
     for file in files:
+        if not always_on:
+            merger.append(file)
+            continue
+
+        current_num_pages = len(merger.pages) + offset
+        is_even = current_num_pages % 2 == 0
+
+        # Determine if an empty page needs to be added
+        needs_empty_page = (always_on == "odd" and is_even) or (always_on == "even" and not is_even)
+
+        if needs_empty_page:
+            # Create an empty page and add it
+            empty_page = PageObject.create_blank_page(width=595, height=842)
+            merger.add_page(empty_page)
+
+        # Append the current file
         merger.append(file)
 
     merger.write(output_path)
@@ -102,8 +126,8 @@ def main():
     if args.count:
         return
 
-    files = generate_with_offset(pdf_info, temp_dir, args.offset)
-    combine_pdfs(files, args.output)
+    files = generate_with_offset(pdf_info, temp_dir, args.offset, args.always_on)
+    combine_pdfs(files, args.output, args.offset, args.always_on)
 
     print(f"---- Combined all PDFs with offset {args.offset} and saved to {args.output} ----")
 
