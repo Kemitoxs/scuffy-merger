@@ -16,10 +16,8 @@ def install_fitz():
         except ImportError:
             print(f"{import_name} module not found, installing {package_name}...")
             subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
-        finally:
-            # Re-import after installation attempt
-            globals()[import_name] = __import__(import_name)
 
     check_and_install_package("pymupdf", "fitz")
+    check_and_install_package("pypdf")
 
     print("All required dependencies have been installed")

@@ -12,7 +12,7 @@ installer.install_fitz()
 import fitz
 
 
-ASCIIDOCTOR_COMMAND_TEMPLATE = "asciidoctor-pdf {} -o {}"
+ASCIIDOCTOR_COMMAND_TEMPLATE = "asciidoctor-pdf \"{}\" -o {}"
 
 
 def generate_asciidoctor_file(in_path, out_path):

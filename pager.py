@@ -6,7 +6,9 @@ import offset_generator
 import os
 import uuid
 
+
 installer.install_fitz()
+from pypdf import PdfWriter
 import fitz
 
 
@@ -74,22 +76,13 @@ def generate_with_offset(pdf_info, temp_dir, initial_offset):
 
 def combine_pdfs(files, output_path):
     """Combines all the given PDFs into one by appending them"""
-    merged_doc = fitz.open()
+    merger = PdfWriter()
 
-    for pdf_path in files:
-        # Open the current PDF
-        current_doc = fitz.open(pdf_path)
+    for file in files:
+        merger.append(file)
 
-        # Iterate through each page of the current PDF and append it to the merged document
-        for page_num in range(len(current_doc)):
-            merged_doc.insert_pdf(current_doc, from_page=page_num, to_page=page_num)
-
-        # Close the current document now that its pages have been appended
-        current_doc.close()
-
-    # Save the merged document to the specified output path
-    merged_doc.save(output_path)
-    merged_doc.close()
+    merger.write(output_path)
+    merger.close()
 
     print(f"Combined PDF saved to {output_path}")
 

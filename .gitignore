@@ -1,3 +1,6 @@
 .idea
 data
 !data/keepme
+
+*.pdf
+*.docx
