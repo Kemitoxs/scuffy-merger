@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument('files', nargs='+', help='Paths to .adoc files')
     parser.add_argument('--offset', '-O', type=int, default=1, help='Total page offset')
     parser.add_argument("--output", "-o", help="Path to the output file")
+    parser.add_argument("-c", "--count", action="store_true", default=False, help="Count the number of pages")
 
     args = parser.parse_args()
     return args
@@ -46,6 +47,12 @@ def generate_every_pdf(temp_dir, files):
 
         # Store the info in the dictionary
         pdf_info[adoc_file] = page_count
+
+    format_str = "{:<30} | {:>5}"
+    print(format_str.format("Path", "Page Numbers"))
+    print("-" * 35)
+    for key, value in pdf_info.items():
+        print(format_str.format(key, value))
 
     return pdf_info
 
@@ -92,6 +99,9 @@ def main():
 
     temp_dir = offset_generator.copy_data()
     pdf_info = generate_every_pdf(temp_dir, args.files)
+    if args.count:
+        return
+
     files = generate_with_offset(pdf_info, temp_dir, args.offset)
     combine_pdfs(files, args.output)
 
