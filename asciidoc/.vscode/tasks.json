@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build PDF",
+            "type": "shell",
+            "command": "asciidoctor-pdf",
+            "args": [
+                "${workspaceFolder}/content/main.adoc",
+                "-o",
+                "${workspaceFolder}/output/paper.pdf"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build HTML",
+            "type": "shell",
+            "command": "asciidoctor",
+            "args": [
+                "${workspaceFolder}/Content/main.adoc",
+                "-o",
+                "${workspaceFolder}/Output/paper.html"
+            ],
+            "group": {
+                "kind": "build"
+            }
+        }
+    ]
+}

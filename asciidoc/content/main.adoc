@@ -1,0 +1,27 @@
+= Thesis by {Name}: {Subtitle}
+:title-page:
+:doctype: article
+:stem: asciimath
+:source-highlighter: pygments
+:toc: auto
+:!pagenums:
+:toclevels: 2
+:start-at: 10
+:pdf-page-margin: [4cm, 2cm, 2.5cm, 2cm]
+:nofooter:
+
+== Abstract
+
+== Introduction
+
+== Definitions
+
+[cols="1,3"]
+|===
+|Term
+|Explanation.
+|===
+
+== Main Part
+
+== Conclusion
