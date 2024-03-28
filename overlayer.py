@@ -1,6 +1,7 @@
 """Overlay two PDFs"""
-import installer
 import argparse
+import fitz
+from log_helper import *
 
 
 def parse_arguments():
@@ -13,20 +14,10 @@ def parse_arguments():
     return parser.parse_args()
 
 
-args = parse_arguments()
-print("Parameters received:")
-print(f"Base PDF: {args.base}")
-print(f"Overlay PDF: {args.upper}")
-print(f"Output PDF: {args.output}")
-print(f"Page index for overlay: {args.index}")
-
-installer.install_fitz()
-import fitz
-
-
 def overlay_pdfs(base_pdf_path, overlay_pdf_path, output_pdf_path, index):
     if index < 0:
-        raise ValueError("Index must be a non-negative integer")
+        log.critical("Index must be greater than or equal to 0")
+        exit()
 
     base_pdf = fitz.open(base_pdf_path)
     overlay_pdf = fitz.open(overlay_pdf_path)
@@ -34,28 +25,32 @@ def overlay_pdfs(base_pdf_path, overlay_pdf_path, output_pdf_path, index):
     end_index = index + len(overlay_pdf)
 
     if end_index > len(base_pdf):
-        raise ValueError("Overlay PDF does not have enough pages to cover the specified range in the base PDF.")
+        log.critical("The base PDF stops before the upper PDF... Make sure to enter a correct index")
+        exit()
 
-    print(f"Overlaying in base from {start_index} to {end_index}")
+    log.info(f"Overlaying in base from {start_index} to {end_index}")
 
     for page_num in range(start_index, end_index):
         base_page = base_pdf[page_num]
         overlay_index = page_num - index
-        print(f"Overlaying base page {page_num} with upper page {overlay_index}")
-
-        if overlay_index >= len(overlay_pdf):
-            raise RuntimeError("Unexpected end of overlay PDF.")
+        log.debug(f"Overlaying base page {page_num} with upper page {overlay_index}")
 
         overlay_page = overlay_pdf[overlay_index]
         try:
             base_page.show_pdf_page(base_page.rect, overlay_pdf, overlay_page.number)  # Overlay page
-        except ValueError as e:
-            print(f"Could not overlay empty page, {e}")
+        except ValueError:
+            log.debug(f"Skipping empty upper page {overlay_index}")
 
     base_pdf.save(output_pdf_path)
 
-    print("Done... Saved output to " + output_pdf_path)
+    log.info(f"---- Saved output to {output_pdf_path} ----")
+
+
+def main():
+    args = parse_arguments()
+    overlay_pdfs(args.base, args.upper, args.output, args.index)
 
 
 if __name__ == "__main__":
-    overlay_pdfs(args.base, args.upper, args.output, args.index)
+    configure_logger()
+    main()

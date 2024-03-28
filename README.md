@@ -22,7 +22,7 @@ If you ask this question this place most likely isn't for you.
 Great, all the doors are open head on over to [here](#from-the-beginning) to learn how to get started.
 
 `I have already written my thesis.`  
-Ok, now it depends, what you used. 
+Ok, now it depends, what you used.
 
 If you used Word this document is of no help to you, you are in an unexplored parallel world.
 You may need to color code blocks by yourself, I wish you the best of luck. 🍀
@@ -69,7 +69,7 @@ How many sources you should consult or the ratio between images, codeblocks and 
 Just do what feels right and consult your supervisor.
 This is the majority of the work. 
 
-## Afterwards 
+## Afterwards
 
 # Other
 

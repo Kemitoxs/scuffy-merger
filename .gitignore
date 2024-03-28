@@ -1,6 +1,8 @@
 .idea
 data
 !data/keepme
+build
+scuffy_merger.egg-info
 
 *.pdf
 *.docx

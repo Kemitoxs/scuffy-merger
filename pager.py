@@ -1,15 +1,10 @@
 import argparse
-import tempfile
-
-import installer
 import offset_generator
 import os
 import uuid
-
-
-installer.install_fitz()
-from pypdf import PdfWriter, PdfReader, PageObject
+from pypdf import PdfWriter, PageObject
 import fitz
+from log_helper import *
 
 
 def parse_args():
@@ -50,11 +45,12 @@ def generate_every_pdf(temp_dir, files, always_on=None):
         # Store the info in the dictionary
         pdf_info[adoc_file] = page_count
 
-    format_str = "{:<30} | {:>5}"
-    print(format_str.format("Path", "Page Numbers"))
-    print("-" * 35)
+    format_str = "{:<50} | {:>5}"
+    header = format_str.format("Path", "Page Numbers")
+    log.info(header)
+    log.info("-" * len(header))
     for key, value in pdf_info.items():
-        print(format_str.format(key, value))
+        log.info(format_str.format(key, value))
 
     return pdf_info
 
@@ -78,7 +74,7 @@ def generate_with_offset(pdf_info, temp_dir, initial_offset, always_on=None):
                 cumulative_offset += 1
 
         offset_generator.generate_document(adoc_file, cumulative_offset, pdf_path)
-        print(f"Regenerated {adoc_file} with offset {cumulative_offset} to {pdf_path}")
+        log.debug(f"Regenerated {adoc_file} with offset {cumulative_offset} to {pdf_path}")
 
         # Update the cumulative offset with the page count of the current document
         cumulative_offset += page_count
@@ -115,22 +111,26 @@ def combine_pdfs(files, output_path, offset, always_on=None):
     merger.write(output_path)
     merger.close()
 
-    print(f"Combined PDF saved to {output_path}")
-
 
 def main():
     args = parse_args()
 
     temp_dir = offset_generator.copy_data()
+
+    log.info("(1/3) Generating all PDFs to find out the number of pages")
     pdf_info = generate_every_pdf(temp_dir, args.files)
     if args.count:
         return
 
+    log.info("(2/3) Generating all PDFs with total offset + offset of previous PDFs")
     files = generate_with_offset(pdf_info, temp_dir, args.offset, args.always_on)
+
+    log.info("(3/3) Combining all PDFs into one")
     combine_pdfs(files, args.output, args.offset, args.always_on)
 
-    print(f"---- Combined all PDFs with offset {args.offset} and saved to {args.output} ----")
+    log.info(f"---- Combined all PDFs with offset {args.offset} and saved to {args.output} ----")
 
 
 if __name__ == '__main__':
+    configure_logger()
     main()
